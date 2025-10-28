@@ -1,0 +1,109 @@
+body {
+    background-color: lightblue;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+header h1,
+header i {
+    display: inline-flex;
+    align-items: center;
+}
+
+header h1 {
+    color: orangered;
+    font-size: 50px;
+    margin: 0;
+}
+
+header i.fa-css3-alt {
+    font-size: 47px;
+    color: #2965f1;
+    margin-left: 10px;
+}
+
+nav {
+    background-color: #333;
+    padding: 10px;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+nav a:hover {
+    color: yellow;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+.container div {
+    background-color: white;
+    width: 320px;
+    border: 3px solid transparent;
+    border-top-right-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    margin:0 10px ;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.container img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.container h3 {
+    margin: 5px 0;
+    color: #333;
+}
+
+.container p {
+    margin: 5px 0 10px 0;
+    color: #555;
+}
+
+.container button {
+    background-color: orangered;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 7px 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.container button:hover {
+    background-color: #ff5722;
+}
+
+footer {
+    text-align: right;
+    background-color: #222;
+    color: white;
+    padding: 30px;
+    font-size: 14px;
+    margin-top: 30px;
+}
