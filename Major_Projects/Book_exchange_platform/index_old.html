@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Exchange Platform</title>
+    <link rel="stylesheet" href="./style.css">
+        
+</head>
+<body>
+    <nav>
+        <h1>📚 BookXchange</h1>
+        <ul id="navMenu">
+            <li><a href="#" onclick="showPage('home')">Home</a></li>
+            <li id="myBooksNav" class="hidden"><a href="#" onclick="showPage('myBooks')">My Books</a></li>
+            <li id="loginNav"><a href="#" onclick="showPage('login')">Login</a></li>
+            <li id="signupNav"><a href="#" onclick="showPage('signup')">Signup</a></li>
+            <li id="logoutNav" class="hidden"><a href="#" onclick="logout()">Logout</a></li>
+            <li id="userDisplay" class="hidden"></li>
+        </ul>
+    </nav>
+
+    <div id="message"></div>
+
+    <!-- Home Page -->
+    <div id="homePage">
+        <div class="hero">
+            <h2>Book Exchange Platform</h2>
+            <p>Discover, share, and exchange books with fellow readers</p>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search for books">
+                <button onclick="searchBooks()">Search</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="section">
+                <h3>Search Results</h3>
+                <div id="searchResults" class="books-grid"></div>
+            </div>
+
+            <div class="section">
+                <h3>Popular Books</h3>
+                <div class="books-grid">
+                    <div class="book-card">
+                        <img src="https://covers.openlibrary.org/b/id/8228691-L.jpg" alt="Book">
+                        <div class="book-info">
+                            <h4>The Catcher in the Rye</h4>
+                            <p>J. D. Salinger</p>
+                        </div>
+                    </div>
+                    <div class="book-card">
+                        <img src="https://covers.openlibrary.org/b/id/8231346-L.jpg" alt="Book">
+                        <div class="book-info">
+                            <h4>To Kill a Mockingbird</h4>
+                            <p>Harper Lee</p>
+                        </div>
+                    </div>
+                    <div class="book-card">
+                        <img src="https://covers.openlibrary.org/b/id/7222246-L.jpg" alt="Book">
+                        <div class="book-info">
+                            <h4>1984</h4>
+                            <p>George Orwell</p>
+                        </div>
+                    </div>
+                    <div class="book-card">
+                        <img src="https://covers.openlibrary.org/b/id/8913952-L.jpg" alt="Book">
+                        <div class="book-info">
+                            <h4>Pride and Prejudice</h4>
+                            <p>Jane Austen</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="hidden">
+        <div class="auth-form">
+            <h3>Login to Your Account</h3>
+            <form onsubmit="login(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Page -->
+    <div id="signupPage" class="hidden">
+        <div class="auth-form">
+            <h3>Create New Account</h3>
+            <form onsubmit="signup(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signupUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" required>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="width: 100%;">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- My Books Page -->
+    <div id="myBooksPage" class="hidden">
+        <div class="container">
+            <div class="section">
+                <h3>My Book Collection</h3>
+                <div id="myBooksGrid" class="books-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+let authToken = localStorage.getItem('authToken') || null;
+let currentUser = localStorage.getItem('username') || null;
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', () => {
+    if (authToken) {
+        checkAuth();
+    }
+});
+
+function getAuthHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+    };
+}
+
+function showMessage(text, type = 'success') {
+    const msgDiv = document.getElementById('message');
+    msgDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+    setTimeout(() => msgDiv.innerHTML = '', 3000);
+}
+
+function showPage(page) {
+    document.getElementById('homePage').classList.add('hidden');
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('signupPage').classList.add('hidden');
+    document.getElementById('myBooksPage').classList.add('hidden');
+
+    document.getElementById(page + 'Page').classList.remove('hidden');
+
+    if (page === 'myBooks') {
+        loadMyBooks();
+    }
+}
+
+async function signup(e) {
+    e.preventDefault();
+    const username = document.getElementById('signupUsername').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+
+    try {
+        const res = await fetch(`${API_URL}/signup`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, email, password})
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            authToken = data.token;
+            currentUser = data.username;
+            localStorage.setItem('authToken', authToken);
+            localStorage.setItem('username', currentUser);
+            showMessage('Signup successful!');
+            updateAuthUI(currentUser);
+            showPage('home');
+        } else {
+            showMessage(data.error, 'error');
+        }
+    } catch (err) {
+        showMessage('Connection error. Make sure Flask server is running.', 'error');
+    }
+}
+
+async function login(e) {
+    e.preventDefault();
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+        const res = await fetch(`${API_URL}/login`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password})
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            authToken = data.token;
+            currentUser = data.username;
+            localStorage.setItem('authToken', authToken);
+            localStorage.setItem('username', currentUser);
+            showMessage('Login successful!');
+            updateAuthUI(currentUser);
+            showPage('home');
+        } else {
+            showMessage(data.error, 'error');
+        }
+    } catch (err) {
+        showMessage('Connection error. Make sure Flask server is running.', 'error');
+    }
+}
+
+async function logout() {
+    try {
+        if (authToken) {
+            await fetch(`${API_URL}/logout`, {
+                method: 'POST',
+                headers: getAuthHeaders()
+            });
+        }
+        authToken = null;
+        currentUser = null;
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('username');
+        showMessage('Logged out successfully');
+        updateAuthUI(null);
+        showPage('home');
+    } catch (err) {
+        showMessage('Logout error', 'error');
+    }
+}
+
+async function checkAuth() {
+    if (!authToken) {
+        updateAuthUI(null);
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/check-auth`, {
+            headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        
+        if (data.authenticated) {
+            currentUser = data.username;
+            localStorage.setItem('username', currentUser);
+            updateAuthUI(currentUser);
+        } else {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            updateAuthUI(null);
+        }
+    } catch (err) {
+        console.error('Auth check failed:', err);
+    }
+}
+
+function updateAuthUI(username) {
+    if (username) {
+        document.getElementById('loginNav').classList.add('hidden');
+        document.getElementById('signupNav').classList.add('hidden');
+        document.getElementById('myBooksNav').classList.remove('hidden');
+        document.getElementById('logoutNav').classList.remove('hidden');
+        document.getElementById('userDisplay').classList.remove('hidden');
+        document.getElementById('userDisplay').textContent = `Hi, ${username}`;
+    } else {
+        document.getElementById('loginNav').classList.remove('hidden');
+        document.getElementById('signupNav').classList.remove('hidden');
+        document.getElementById('myBooksNav').classList.add('hidden');
+        document.getElementById('logoutNav').classList.add('hidden');
+        document.getElementById('userDisplay').classList.add('hidden');
+    }
+}
+
+async function searchBooks() {
+    const query = document.getElementById('searchInput').value;
+    if (!query) return;
+
+    try {
+        const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        
+        const resultsDiv = document.getElementById('searchResults');
+        resultsDiv.innerHTML = '';
+
+        if (data.books && data.books.length > 0) {
+            data.books.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <img src="${book.cover}" alt="${book.title}">
+                    <div class="book-info">
+                        <h4>${book.title}</h4>
+                        <p>${book.author}</p>
+                        <button class="btn add-book-btn" onclick='addBook(${JSON.stringify(book).replace(/'/g, "&apos;")})'>Add to My Books</button>
+                    </div>
+                `;
+                resultsDiv.appendChild(card);
+            });
+        } else {
+            resultsDiv.innerHTML = '<p>No books found</p>';
+        }
+    } catch (err) {
+        showMessage('Search error', 'error');
+    }
+}
+
+async function addBook(book) {
+    if (!authToken) {
+        showMessage('Please login first', 'error');
+        showPage('login');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/addBook`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                title: book.title,
+                author: book.author,
+                cover_url: book.cover,
+                google_book_id: book.id,
+                isbn: book.isbn
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            showMessage('Book added to your collection!');
+        } else if (res.status === 401) {
+            showMessage('Please login first', 'error');
+            showPage('login');
+        } else {
+            showMessage(data.error, 'error');
+        }
+    } catch (err) {
+        showMessage('Error adding book', 'error');
+    }
+}
+
+async function loadMyBooks() {
+    if (!authToken) {
+        showMessage('Please login first', 'error');
+        showPage('login');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/myBooks`, {
+            headers: getAuthHeaders()
+        });
+        
+        if (res.status === 401) {
+            showMessage('Session expired. Please login again', 'error');
+            logout();
+            return;
+        }
+
+        const data = await res.json();
+        
+        const grid = document.getElementById('myBooksGrid');
+        grid.innerHTML = '';
+
+        if (data.books && data.books.length > 0) {
+            data.books.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <img src="${book.cover_url || 'https://via.placeholder.com/200x280'}" alt="${book.title}">
+                    <div class="book-info">
+                        <h4>${book.title}</h4>
+                        <p>${book.author}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        } else {
+            grid.innerHTML = '<p>No books in your collection yet</p>';
+        }
+    } catch (err) {
+        showMessage('Error loading books', 'error');
+    }
+}
+    </script>
+</body>
+</html>

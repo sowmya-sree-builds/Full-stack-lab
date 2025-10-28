@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Book Exchange</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        nav h1 {
+            color: #667eea;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        nav a:hover {
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .profile-header {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+
+        .profile-top {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-photo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid #667eea;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .username {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            color: #666;
+            font-size: 1rem;
+            font-style: italic;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: white;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .book-card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+        }
+
+        .book-info {
+            padding: 1rem;
+        }
+
+        .book-info h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .book-info p {
+            color: #666;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .request-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+
+        .request-card:hover {
+            transform: translateX(5px);
+        }
+
+        .request-book-cover {
+            width: 80px;
+            height: 120px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .request-info {
+            flex: 1;
+        }
+
+        .request-title {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .request-author {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .request-user {
+            color: #667eea;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .request-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .status-accepted {
+            background: #55efc4;
+            color: #00b894;
+        }
+
+        .status-rejected {
+            background: #ffcccc;
+            color: #d63031;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-accept {
+            background: #55efc4;
+            color: #00b894;
+        }
+
+        .btn-accept:hover {
+            background: #00b894;
+            color: white;
+        }
+
+        .btn-reject {
+            background: #ff7675;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #d63031;
+        }
+
+        .btn-remove {
+            background: #fab1a0;
+            color: #d63031;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-remove:hover {
+            background: #d63031;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+            font-size: 1.1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s;
+        }
+
+        .message.success {
+            background: #55efc4;
+            color: #00b894;
+        }
+
+        .message.error {
+            background: #ff7675;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .profile-top {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .books-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .request-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1 onclick="goHome()">📚 BookXchange</h1>
+        <ul>
+            <li><a onclick="goHome()">Home</a></li>
+            <li><a onclick="goToFavorites()">Favorites</a></li>
+            <li><a onclick="window.location.reload()">Profile</a></li>
+            <li><a onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div id="message"></div>
+
+    <div class="container">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            Loading profile...
+        </div>
+
+        <div id="profileContent" class="hidden">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-top">
+                    <img id="profilePhoto" class="profile-photo" src="" alt="Profile">
+                    <div class="profile-info">
+                        <h2 class="username" id="username">Loading...</h2>
+                        <p class="tagline">Exchange, Read, Return, Repeat 📖</p>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <span class="stat-number" id="exchangesCount">0</span>
+                        <span class="stat-label">Exchanges</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="requestsCount">0</span>
+                        <span class="stat-label">Requests</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="favoritesCount">0</span>
+                        <span class="stat-label">Favorites</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Exchange Requests Section -->
+            <h3 class="section-title">📬 My Exchange Requests</h3>
+            
+            <div id="sentRequests"></div>
+            <div id="receivedRequests"></div>
+
+            <!-- Favorites Section -->
+            <h3 class="section-title">⭐ My Favorite Books</h3>
+            <div id="favoritesGrid" class="books-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let authToken = localStorage.getItem('authToken');
+
+        if (!authToken) {
+            window.location.href = 'index.html';
+        }
+
+        function getAuthHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            };
+        }
+
+        function showMessage(text, type = 'success') {
+            const msgDiv = document.getElementById('message');
+            msgDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+            setTimeout(() => msgDiv.innerHTML = '', 3000);
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        function goToFavorites() {
+            document.getElementById('favoritesGrid').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/logout`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('username');
+                window.location.href = 'index.html';
+            } catch (err) {
+                console.error('Logout error:', err);
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                const res = await fetch(`${API_URL}/profile`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (res.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const data = await res.json();
+                
+                document.getElementById('username').textContent = data.username;
+                document.getElementById('profilePhoto').src = data.profile_photo;
+                document.getElementById('exchangesCount').textContent = data.stats.exchanges;
+                document.getElementById('requestsCount').textContent = data.stats.requests;
+                document.getElementById('favoritesCount').textContent = data.stats.favorites;
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('profileContent').classList.remove('hidden');
+
+            } catch (err) {
+                showMessage('Error loading profile', 'error');
+                console.error(err);
+            }
+        }
+
+        async function loadRequests() {
+            try {
+                const res = await fetch(`${API_URL}/myRequests`, {
+                    headers: getAuthHeaders()
+                });
+
+                const data = await res.json();
+
+                // Sent Requests
+                const sentDiv = document.getElementById('sentRequests');
+                if (data.sent && data.sent.length > 0) {
+                    sentDiv.innerHTML = '<h4 style="color: white; margin: 1rem 0;">Sent Requests:</h4>';
+                    data.sent.forEach(req => {
+                        const card = document.createElement('div');
+                        card.className = 'request-card';
+                        card.innerHTML = `
+                            <img src="${req.cover_url}" class="request-book-cover" alt="${req.title}">
+                            <div class="request-info">
+                                <div class="request-title">${req.title}</div>
+                                <div class="request-author">by ${req.author}</div>
+                                <div class="request-user">From: ${req.owner_username}</div>
+                            </div>
+                            <div class="request-status status-${req.status}">${req.status}</div>
+                        `;
+                        sentDiv.appendChild(card);
+                    });
+                } else {
+                    sentDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>No sent requests yet</div>';
+                }
+
+                // Received Requests
+                const receivedDiv = document.getElementById('receivedRequests');
+                if (data.received && data.received.length > 0) {
+                    receivedDiv.innerHTML = '<h4 style="color: white; margin: 2rem 0 1rem 0;">Received Requests:</h4>';
+                    data.received.forEach(req => {
+                        const card = document.createElement('div');
+                        card.className = 'request-card';
+                        card.innerHTML = `
+                            <img src="${req.cover_url}" class="request-book-cover" alt="${req.title}">
+                            <div class="request-info">
+                                <div class="request-title">${req.title}</div>
+                                <div class="request-author">by ${req.author}</div>
+                                <div class="request-user">From: ${req.requester_username}</div>
+                            </div>
+                            ${req.status === 'pending' ? `
+                                <div class="action-buttons">
+                                    <button class="btn btn-accept" onclick="updateRequest(${req.id}, 'accepted')">✓ Accept</button>
+                                    <button class="btn btn-reject" onclick="updateRequest(${req.id}, 'rejected')">✗ Reject</button>
+                                </div>
+                            ` : `<div class="request-status status-${req.status}">${req.status}</div>`}
+                        `;
+                        receivedDiv.appendChild(card);
+                    });
+                } else {
+                    receivedDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📬</div>No received requests yet</div>';
+                }
+
+            } catch (err) {
+                console.error('Error loading requests:', err);
+            }
+        }
+
+        async function updateRequest(requestId, status) {
+            try {
+                const res = await fetch(`${API_URL}/updateRequest/${requestId}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ status })
+                });
+
+                if (res.ok) {
+                    showMessage(`Request ${status}!`, 'success');
+                    loadRequests();
+                    loadProfile(); // Refresh stats
+                } else {
+                    showMessage('Failed to update request', 'error');
+                }
+            } catch (err) {
+                showMessage('Error updating request', 'error');
+            }
+        }
+
+        async function loadFavorites() {
+            try {
+                const res = await fetch(`${API_URL}/myFavorites`, {
+                    headers: getAuthHeaders()
+                });
+
+                const data = await res.json();
+                const grid = document.getElementById('favoritesGrid');
+                grid.innerHTML = '';
+
+                if (data.favorites && data.favorites.length > 0) {
+                    data.favorites.forEach(fav => {
+                        const card = document.createElement('div');
+                        card.className = 'book-card';
+                        card.innerHTML = `
+                            <img src="${fav.cover || 'https://via.placeholder.com/200x280?text=No+Cover'}" alt="${fav.title}">
+                            <div class="book-info">
+                                <h4>${fav.title}</h4>
+                                <p>${fav.author}</p>
+                                <button class="btn btn-remove" onclick="removeFavorite(${fav.id})">Remove</button>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                } else {
+                    grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⭐</div>No favorites yet. Start adding books!</div>';
+                }
+
+            } catch (err) {
+                console.error('Error loading favorites:', err);
+            }
+        }
+
+        async function removeFavorite(favId) {
+            try {
+                const res = await fetch(`${API_URL}/removeFavorite/${favId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+
+                if (res.ok) {
+                    showMessage('Removed from favorites', 'success');
+                    loadFavorites();
+                    loadProfile(); // Refresh stats
+                } else {
+                    showMessage('Failed to remove favorite', 'error');
+                }
+            } catch (err) {
+                showMessage('Error removing favorite', 'error');
+            }
+        }
+
+        // Load all data on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadProfile();
+            loadRequests();
+            loadFavorites();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Exchange Platform</title>
+    <link rel="stylesheet" href="./style1.css">
+</head>
+<body>
+    <nav>
+        <h1 onclick="showPage('home')">📚 BookXchange</h1>
+        <ul id="navMenu">
+            <li><a onclick="showPage('home')">Home</a></li>
+            <li id="profileNav" class="hidden"><a onclick="goToProfile()">Profile</a></li>
+            <li id="loginNav"><a onclick="showPage('login')">Login</a></li>
+            <li id="signupNav"><a onclick="showPage('signup')">Signup</a></li>
+            <li id="logoutNav" class="hidden"><a onclick="logout()">Logout</a></li>
+            <li id="userDisplay" class="hidden"></li>
+        </ul>
+    </nav>
+
+    <div id="message"></div>
+
+    <!-- Home Page -->
+    <div id="homePage">
+        <div class="hero">
+            <h2>Book Exchange Platform</h2>
+            <p>Exchange, Read, Return, Repeat 📖</p>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search for books..." onkeypress="if(event.key==='Enter') searchBooks()">
+                <button onclick="searchBooks()">Search</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="section">
+                <h3>Search Results</h3>
+                <div id="searchResults" class="books-grid"></div>
+            </div>
+
+            <div class="section">
+                <h3>Popular Books</h3>
+                <div class="books-grid" id="popularBooks"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="hidden">
+        <div class="auth-form">
+            <h3>Login to Your Account</h3>
+            <form onsubmit="login(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Page -->
+    <div id="signupPage" class="hidden">
+        <div class="auth-form">
+            <h3>Create New Account</h3>
+            <form onsubmit="signup(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signupUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-secondary">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Book Details Modal -->
+    <div id="bookModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Book Details</h2>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <img id="modalCover" class="book-detail-cover" src="" alt="Book Cover">
+            <div class="book-detail-info">
+                <h3>Author</h3>
+                <p id="modalAuthor"></p>
+            </div>
+            <div class="book-detail-info">
+                <h3>Description</h3>
+                <p id="modalDescription"></p>
+            </div>
+            <div class="book-detail-info">
+                <h3>ISBN</h3>
+                <p id="modalISBN"></p>
+            </div>
+            <div class="book-detail-info">
+                <h3>Rating</h3>
+                <p id="modalRating"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let authToken = localStorage.getItem('authToken') || null;
+        let currentUser = localStorage.getItem('username') || null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (authToken) {
+                checkAuth();
+            }
+            loadPopularBooks();
+        });
+
+        function getAuthHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            };
+        }
+
+        function showMessage(text, type = 'success') {
+            const msgDiv = document.getElementById('message');
+            msgDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+            setTimeout(() => msgDiv.innerHTML = '', 3000);
+        }
+
+        function showPage(page) {
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('signupPage').classList.add('hidden');
+            document.getElementById(page + 'Page').classList.remove('hidden');
+        }
+
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        async function signup(e) {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const res = await fetch(`${API_URL}/signup`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, email, password})
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    authToken = data.token;
+                    currentUser = data.username;
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('username', currentUser);
+                    showMessage('Signup successful! Welcome! 🎉');
+                    updateAuthUI(currentUser);
+                    showPage('home');
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (err) {
+                showMessage('Connection error. Make sure Flask server is running.', 'error');
+            }
+        }
+
+        async function login(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    authToken = data.token;
+                    currentUser = data.username;
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('username', currentUser);
+                    showMessage('Login successful! 🎉');
+                    updateAuthUI(currentUser);
+                    showPage('home');
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (err) {
+                showMessage('Connection error. Make sure Flask server is running.', 'error');
+            }
+        }
+
+        async function logout() {
+            try {
+                if (authToken) {
+                    await fetch(`${API_URL}/logout`, {
+                        method: 'POST',
+                        headers: getAuthHeaders()
+                    });
+                }
+                authToken = null;
+                currentUser = null;
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('username');
+                showMessage('Logged out successfully');
+                updateAuthUI(null);
+                showPage('home');
+            } catch (err) {
+                showMessage('Logout error', 'error');
+            }
+        }
+
+        async function checkAuth() {
+            if (!authToken) {
+                updateAuthUI(null);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/profile`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    currentUser = data.username;
+                    localStorage.setItem('username', currentUser);
+                    updateAuthUI(currentUser);
+                } else {
+                    authToken = null;
+                    currentUser = null;
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('username');
+                    updateAuthUI(null);
+                }
+            } catch (err) {
+                console.error('Auth check failed:', err);
+            }
+        }
+
+        function updateAuthUI(username) {
+            if (username) {
+                document.getElementById('loginNav').classList.add('hidden');
+                document.getElementById('signupNav').classList.add('hidden');
+                document.getElementById('profileNav').classList.remove('hidden');
+                document.getElementById('logoutNav').classList.remove('hidden');
+                document.getElementById('userDisplay').classList.remove('hidden');
+                document.getElementById('userDisplay').textContent = `Hi, ${username}`;
+            } else {
+                document.getElementById('loginNav').classList.remove('hidden');
+                document.getElementById('signupNav').classList.remove('hidden');
+                document.getElementById('profileNav').classList.add('hidden');
+                document.getElementById('logoutNav').classList.add('hidden');
+                document.getElementById('userDisplay').classList.add('hidden');
+            }
+        }
+
+        async function searchBooks() {
+            const query = document.getElementById('searchInput').value;
+            if (!query) {
+                showMessage('Please enter a search term', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                
+                const resultsDiv = document.getElementById('searchResults');
+                resultsDiv.innerHTML = '';
+
+                if (data.books && data.books.length > 0) {
+                    data.books.forEach(book => {
+                        resultsDiv.appendChild(createBookCard(book));
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<p>No books found</p>';
+                }
+            } catch (err) {
+                showMessage('Search error', 'error');
+            }
+        }
+
+        async function loadPopularBooks() {
+            try {
+                const res = await fetch(`${API_URL}/search?q=popular`);
+                const data = await res.json();
+                
+                const grid = document.getElementById('popularBooks');
+                grid.innerHTML = '';
+
+                if (data.books && data.books.length > 0) {
+                    data.books.slice(0, 8).forEach(book => {
+                        grid.appendChild(createBookCard(book));
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading popular books:', err);
+            }
+        }
+
+        function createBookCard(book) {
+            const card = document.createElement('div');
+            card.className = 'book-card';
+            
+            const rating = '⭐'.repeat(Math.round(book.rating || 4));
+            
+            card.innerHTML = `
+                <img src="${book.cover}" alt="${book.title}">
+                <div class="book-info">
+                    <h4>${book.title}</h4>
+                    <p>${book.author}</p>
+                    <div class="book-rating">${rating} ${(book.rating || 4).toFixed(1)}</div>
+                    <div class="book-actions">
+                        <button class="add-favorite-btn" onclick='addToFavorites(${JSON.stringify(book).replace(/'/g, "&apos;")})' title="Add to Favorites">+</button>
+                        <button class="view-details-btn" onclick='viewBookDetails(${JSON.stringify(book).replace(/'/g, "&apos;")})'>View Details</button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        async function addToFavorites(book) {
+            if (!authToken) {
+                showMessage('Please login to add favorites', 'error');
+                showPage('login');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/addFavorite`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        title: book.title,
+                        author: book.author,
+                        cover: book.cover,
+                        description: book.description,
+                        isbn: book.isbn
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showMessage('Added to favorites! ⭐');
+                } else if (res.status === 409) {
+                    showMessage('Already in favorites!', 'error');
+                } else if (res.status === 401) {
+                    showMessage('Please login first', 'error');
+                    showPage('login');
+                } else {
+                    showMessage(data.error, 'error');
+                }
+            } catch (err) {
+                showMessage('Error adding to favorites', 'error');
+            }
+        }
+
+        function viewBookDetails(book) {
+            document.getElementById('modalTitle').textContent = book.title;
+            document.getElementById('modalCover').src = book.cover;
+            document.getElementById('modalAuthor').textContent = book.author;
+            document.getElementById('modalDescription').textContent = book.description || 'No description available';
+            document.getElementById('modalISBN').textContent = book.isbn || 'Not available';
+            document.getElementById('modalRating').textContent = '⭐'.repeat(Math.round(book.rating || 4)) + ` ${(book.rating || 4).toFixed(1)}/5`;
+            
+            document.getElementById('bookModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('bookModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('bookModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
